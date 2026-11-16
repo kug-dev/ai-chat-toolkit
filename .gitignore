@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.pytest_cache/
+.venv/
+venv/
+
+# Local settings and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Chat archives and private analysis output (never commit user chat data)
+*.zip
+*.sqlite
+*.db
+ChatTopicReport/
+chat_reports.json
+analysis.json
+branch_families.json
+retry_chat_ids.json
+backup_history_*.json
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated reports can contain full or partial private conversation content
+topic_report.html
+chat_index.csv
+similar_pairs.csv
+archive_health.csv
+branch_matches.csv
+branch_families.json
+chat_reports.json
+analysis.json
+retry_chat_ids.json
+grouped_chats.zip
+online_ai_bundle*.md

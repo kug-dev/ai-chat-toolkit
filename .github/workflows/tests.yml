@@ -1,0 +1,23 @@
+name: tests
+on:
+  push:
+  pull_request:
+jobs:
+  python-and-userscript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Python syntax and tests
+        run: |
+          python -m compileall -q chat_topic_finder
+          python -m unittest discover -s tests -v
+      - name: Build browser userscript
+        run: |
+          python browser/build.py
+          node --check browser/dist/ai-chat-backup.user.js

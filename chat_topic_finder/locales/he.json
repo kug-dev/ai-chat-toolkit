@@ -1,0 +1,413 @@
+{
+  "python_gui": {
+    "Analyze backup ZIPs or exported conversations": "ניתוח קובצי ZIP של גיבויים או שיחות שיוצאו",
+    "Input file or folder": "קובץ או תיקיית קלט",
+    "Choose files…": "בחירת קבצים…",
+    "Choose folder…": "בחירת תיקייה…",
+    "Output folder": "תיקיית פלט",
+    "Browse…": "עיון…",
+    "Similarity threshold (0–1)": "סף דמיון (0–1)",
+    "Min group": "גודל קבוצה מינימלי",
+    "Mutual k-NN": "k-NN הדדי",
+    "Max group": "גודל קבוצה מרבי",
+    "Export deduplicated grouped_chats.zip": "ייצוא grouped_chats.zip ללא כפילויות",
+    "AI Model (local/online):": "מודל AI (מקומי/מקוון):",
+    "URL:": "כתובת URL:",
+    "API Key:": "מפתח API:",
+    "Max chars:": "מספר תווים מרבי:",
+    "Mode:": "מצב:",
+    "Pass 2": "מעבר שני",
+    "Export online_ai_bundle.md (for Gemini/NotebookLM/Claude upload)": "ייצוא online_ai_bundle.md (להעלאה ל-Gemini/NotebookLM/Claude)",
+    "Import Online AI JSON:": "ייבוא דוח JSON מ-AI מקוון:",
+    "Full-Text Search (SQLite FTS5):": "חיפוש טקסט מלא (SQLite FTS5):",
+    "Search Inside Chats": "חיפוש בתוך השיחות",
+    "All processing stays on this computer; no chatbot or internet connection is used.": "כל העיבוד מתבצע במחשב זה; לא נעשה שימוש בצ'אטבוט או בחיבור לאינטרנט.",
+    "Analyze chats": "ניתוח שיחות",
+    "Analyzing…": "מנתח…",
+    "Provider:": "ספק:",
+    "Remote providers receive conversation text. Use only a provider you trust.": "ספקים מרוחקים מקבלים את טקסט השיחות. השתמשו רק בספק שאתם סומכים עליו.",
+    "Enable automatic branch matching": "הפעלת זיהוי אוטומטי של הסתעפויות שיחה",
+    "Analysis runs locally by default. Optional configured AI providers receive conversation text.": "הניתוח מתבצע מקומית כברירת מחדל. ספקי AI שהוגדרו במפורש מקבלים את טקסט השיחות."
+  },
+  "userscript": {
+    "What to save": "מה לשמור",
+    "Raw JSON of each chat": "JSON גולמי של כל שיחה",
+    "Lossless; lets you re-parse later if a site changes its format": "ללא אובדן מידע; מאפשר לנתח מחדש אם מבנה האתר ישתנה",
+    "Markdown transcript": "תמלול Markdown",
+    "Include model thinking / reasoning blocks in Markdown": "כלול בלוקי חשיבה והנמקה בתמלול",
+    "Rendered inside collapsible <details> blocks": "מוצג בתוך מקטעים נפתחים וסגורים",
+    "Include script runs and execution results in the chat transcript": "כלול הרצות סקריפטים ותוצאות ביצוע בתמלול השיחה",
+    "Adds expandable Script run / Script result blocks for Python, shell, and compatible code tools": "מוסיף מקטעים נפתחים של הרצת סקריפט ותוצאה עבור Python, מעטפת וכלי קוד תואמים",
+    "Include web search citations & grounding links in Markdown": "כלול ציטוטים וקישורי מקורות של חיפוש אינטרנט ב-Markdown",
+    "Artifacts, canvas, Gemini Immersives, created files, widgets": "תוצרים, Canvas, רכיבי Gemini, קבצים שנוצרו ווידג׳טים",
+    "Reconstructed from every create/update/rewrite in the chat": "נבנה מחדש מכל פעולת יצירה, עדכון ושכתוב בשיחה",
+    "Code blocks from replies": "קטעי קוד מהתשובות",
+    "Every fenced block of 40+ characters, numbered by turn": "כל בלוק קוד באורך 40 תווים ומעלה, ממוספר לפי תור",
+    "Files I uploaded": "קבצים שהעליתי",
+    "Files, images, video the AI generated": "קבצים, תמונות וסרטונים שנוצרו על ידי ה-AI",
+    "Best effort — only works while the site still serves them": "מאמץ מיטבי — עובד רק כל עוד האתר עדיין מגיש את הקבצים",
+    "Bundle standalone _viewer.html inside each ZIP part": "כלול קובץ viewer.html עצמאי בכל חלק ZIP",
+    "Browse chats, Markdown, and artifacts offline": "עיון לא מקוון בשיחות, Markdown ותוצרים",
+    "Compression & Disk Streaming": "דחיסה וכתיבה ישירה לדיסק",
+    "DEFLATE-compress text, JSON, and code files": "דחיסת קובצי טקסט, JSON וקוד באמצעות DEFLATE",
+    "Uses native CompressionStream to shrink text/JSON by 75–85%": "משתמש ב-CompressionStream המובנה כדי להקטין טקסט ו-JSON ב-75–85%",
+    "Stream ZIP directly to disk (Chromium showSaveFilePicker)": "כתיבת ZIP ישירות לדיסק (Chromium showSaveFilePicker)",
+    "Near-zero RAM usage for massive media backups": "כמעט ללא שימוש בזיכרון עבור גיבויי מדיה גדולים",
+    "Versions": "גרסאות",
+    "Artifact / canvas / code versions": "גרסאות של תוצרים, Canvas וקוד",
+    "Every version": "כל הגרסאות",
+    "Latest only": "הגרסה האחרונה בלבד",
+    "Also write the latest version as a plain file": "שמור גם את הגרסה האחרונה כקובץ רגיל",
+    "File types": "סוגי קבצים",
+    "Code": "קוד",
+    "Text / docs (md, txt)": "טקסט / מסמכים (md, txt)",
+    "Web pages (html)": "דפי אינטרנט (html)",
+    "Images": "תמונות",
+    "Video": "וידאו",
+    "Audio": "שמע",
+    "Documents (pdf, office)": "מסמכים (PDF, Office)",
+    "Data (csv, json, xml…)": "נתונים (csv, json, xml…)",
+    "Archives": "ארכיונים",
+    "Everything else": "כל השאר",
+    "Applies to artifacts, code blocks, uploads and generated files. Type is decided by file extension (or MIME type once downloaded).": "חל על תוצרים, קטעי קוד, העלאות וקבצים שנוצרו. הסוג נקבע לפי הסיומת או MIME לאחר ההורדה.",
+    "Only these extensions": "רק הסיומות האלה",
+    "Comma separated, empty = no restriction": "מופרד בפסיקים; ריק = ללא הגבלה",
+    "Never these extensions": "לעולם לא הסיומות האלה",
+    "Size limits": "מגבלות גודל",
+    "Max size per file (MB)": "גודל מרבי לקובץ (MB)",
+    "Bigger files are skipped and listed in the manifest": "קבצים גדולים יותר ידולגו ויירשמו במניפסט",
+    "Max size per ZIP part (MB)": "גודל מרבי לחלק ZIP (MB)",
+    "Max chats per ZIP part": "מספר שיחות מרבי בכל חלק ZIP",
+    "Network": "רשת",
+    "Request timeout (s)": "זמן קצוב לבקשה (שניות)",
+    "Anything slower than this is abandoned instead of hanging": "בקשות איטיות יותר יופסקו במקום להיתקע",
+    "Retries on 429 / 5xx / network error": "ניסיונות חוזרים בשגיאות 429 / 5xx / רשת",
+    "Pause between chats (ms)": "השהיה בין שיחות (מ״ש)",
+    "Parallel file downloads": "הורדות קבצים במקביל",
+    "Conversation list": "רשימת שיחות",
+    "Pre-select on load": "בחירה אוטומטית בטעינה",
+    "New + updated since last backup": "חדשות ועודכנו מאז הגיבוי האחרון",
+    "Chats with failed items from last run": "שיחות עם פריטים שנכשלו בהרצה הקודמת",
+    "Everything": "הכול",
+    "Nothing": "ללא בחירה",
+    "Hide chats not updated since": "הסתר שיחות שלא עודכנו מאז",
+    "Max chats per run (0 = no limit)": "מספר שיחות מרבי בהרצה (0 = ללא הגבלה)",
+    "Claude": "Claude",
+    "Organization UUID": "מזהה UUID של הארגון",
+    "Empty = first chat-enabled organization": "ריק = הארגון הראשון שמאפשר שיחות",
+    "Save Claude Project instructions & knowledge docs": "שמור הוראות ומסמכי ידע של פרויקט Claude",
+    "Writes _project_knowledge/ inside project conversation folders": "כותב לתיקיית _project_knowledge בתוך תיקיית השיחה",
+    "Gemini": "Gemini",
+    "Turns requested per conversation": "מספר תורות מבוקש לכל שיחה",
+    "History Sync & Repair List": "סנכרון היסטוריה ורשימת תיקון",
+    "Sync backup state across browsers or import retry_chat_ids.json from Chat Topic Finder.": "סנכרן מצב גיבוי בין דפדפנים או ייבא retry_chat_ids.json מתוך מאתר נושאי השיחות.",
+    "Export backup history": "ייצוא היסטוריית גיבוי",
+    "Import _manifest.json / History / retry_chat_ids.json": "ייבוא _manifest.json / היסטוריה / retry_chat_ids.json",
+    "Maintenance": "תחזוקה",
+    "Reset settings": "איפוס הגדרות",
+    "Forget backup history": "מחיקת היסטוריית הגיבוי",
+    "Click again to confirm clearing history": "לחץ שוב לאישור מחיקת ההיסטוריה",
+    "Search title or project…": "חיפוש כותרת או פרויקט…",
+    "Select…": "בחירה…",
+    "All shown": "כל המוצגות",
+    "None": "ללא",
+    "New + updated": "חדשות ועודכנו",
+    "Failed / missing items from last run": "נכשלו / פריטים חסרים מההרצה הקודמת",
+    "Current chat only": "השיחה הנוכחית בלבד",
+    "Invert": "היפוך בחירה",
+    "Tip: Shift+click selects a range. ": "טיפ: Shift+לחיצה בוחרת טווח. ",
+    "Back up": "גיבוי",
+    "Settings": "הגדרות",
+    "Reload": "רענון",
+    "Working…": "עובד…",
+    "Cancel": "ביטול",
+    "Ready.": "מוכן.",
+    "selected of": "נבחרו מתוך",
+    "Reset all filters and clustering controls": "איפוס כל המסננים והגדרות הקיבוץ",
+    "Log": "יומן",
+    "AI Chat Backup": "גיבוי שיחות AI",
+    "failed items": "פריטים שנכשלו",
+    "new": "חדש",
+    "updated": "עודכן",
+    "backed up": "גובּה",
+    "Cancelling after the current step…": "מבטל לאחר השלב הנוכחי…"
+  },
+  "topic_report_phrases": [
+    [
+      "Chat Topic Finder",
+      "מאתר נושאים לשיחות"
+    ],
+    [
+      "chats scanned",
+      "שיחות נסרקו"
+    ],
+    [
+      "topic groups",
+      "קבוצות נושאים"
+    ],
+    [
+      "qualifying pairs",
+      "זוגות תואמים"
+    ],
+    [
+      "clustered chats",
+      "שיחות בקבוצות"
+    ],
+    [
+      "active threshold",
+      "סף פעיל"
+    ],
+    [
+      "Interactive Explorer:",
+      "סייר אינטראקטיבי:"
+    ],
+    [
+      "Adjust the sliders to",
+      "שנו את המחוונים כדי"
+    ],
+    [
+      "re-cluster live in your browser",
+      "לבנות קבוצות מחדש בדפדפן"
+    ],
+    [
+      "filter by",
+      "לסנן לפי"
+    ],
+    [
+      "Platform / Cross-Platform / Code Language / Date Range",
+      "פלטפורמה / בין פלטפורמות / שפת קוד / טווח תאריכים"
+    ],
+    [
+      "click any month bar in the",
+      "לחצו על עמודת חודש ב"
+    ],
+    [
+      "Activity Timeline",
+      "ציר פעילות"
+    ],
+    [
+      "or click any chat/edge for full previews and side-by-side diffs.",
+      "או על שיחה/קשת כדי לראות תצוגה מלאה והשוואה זו לצד זו."
+    ],
+    [
+      "Similarity Threshold",
+      "סף דמיון"
+    ],
+    [
+      "Candidate pairs down to",
+      "זוגות מועמדים עד"
+    ],
+    [
+      "preloaded",
+      "נטענו מראש"
+    ],
+    [
+      "Mutual",
+      "הדדי"
+    ],
+    [
+      "Filter (0 = Off)",
+      "סינון (0 = כבוי)"
+    ],
+    [
+      "Prunes weak bridge edges between hubs",
+      "מסיר קישורי גישור חלשים בין צמתים מרכזיים"
+    ],
+    [
+      "Max Group Size (0 = Off)",
+      "גודל קבוצה מרבי (0 = כבוי)"
+    ],
+    [
+      "Auto sub-clusters oversized components",
+      "פיצול אוטומטי של קבוצות גדולות מדי"
+    ],
+    [
+      "Platform & Code Filter",
+      "סינון פלטפורמה וקוד"
+    ],
+    [
+      "Min group:",
+      "גודל קבוצה מינימלי:"
+    ],
+    [
+      "All Platforms",
+      "כל הפלטפורמות"
+    ],
+    [
+      "★ Cross-Platform Groups Only",
+      "★ קבוצות בין פלטפורמות בלבד"
+    ],
+    [
+      "All Code/Artifacts",
+      "כל הקוד/התוצרים"
+    ],
+    [
+      "Date Range Filter",
+      "סינון טווח תאריכים"
+    ],
+    [
+      "All dates",
+      "כל התאריכים"
+    ],
+    [
+      "Search Titles, Terms & Artifacts",
+      "חיפוש כותרות, מונחים ותוצרים"
+    ],
+    [
+      "Filter by keyword, title, artifact…",
+      "סינון לפי מילת מפתח, כותרת או תוצר…"
+    ],
+    [
+      "Reset",
+      "איפוס"
+    ],
+    [
+      "Show Unclustered Chats",
+      "הצגת שיחות ללא קבוצה"
+    ],
+    [
+      "Hide Unclustered Chats",
+      "הסתרת שיחות ללא קבוצה"
+    ],
+    [
+      "Export Active Clusters (JSON)",
+      "ייצוא הקבוצות הפעילות (JSON)"
+    ],
+    [
+      "Topic Activity Timeline (click a month to filter)",
+      "ציר פעילות נושאים (לחצו על חודש לסינון)"
+    ],
+    [
+      "Topic groups",
+      "קבוצות נושאים"
+    ],
+    [
+      "Shared clues:",
+      "רמזים משותפים:"
+    ],
+    [
+      "Strongest matching pairs",
+      "הזוגות בעלי ההתאמה הגבוהה ביותר"
+    ],
+    [
+      "Archive / download health",
+      "תקינות ארכיונים והורדות"
+    ],
+    [
+      "Conversation Inspector",
+      "בודק שיחות"
+    ],
+    [
+      "Close (Esc)",
+      "סגירה (Esc)"
+    ],
+    [
+      "Similarity",
+      "דמיון"
+    ],
+    [
+      "Chat A",
+      "שיחה א׳"
+    ],
+    [
+      "Chat B",
+      "שיחה ב׳"
+    ],
+    [
+      "Shared terms",
+      "מונחים משותפים"
+    ],
+    [
+      "Archive",
+      "ארכיון"
+    ],
+    [
+      "ZIP status",
+      "מצב ZIP"
+    ],
+    [
+      "Manifest chats",
+      "שיחות במניפסט"
+    ],
+    [
+      "Saved",
+      "נשמרו"
+    ],
+    [
+      "Missing",
+      "חסרים"
+    ],
+    [
+      "Skipped",
+      "דולגו"
+    ],
+    [
+      "Errors",
+      "שגיאות"
+    ],
+    [
+      "Notes",
+      "הערות"
+    ],
+    [
+      "Group",
+      "קבוצה"
+    ],
+    [
+      "Central Hub",
+      "צומת מרכזי"
+    ],
+    [
+      "Sub-cluster",
+      "תת-קבוצה"
+    ],
+    [
+      "Unclustered Conversations",
+      "שיחות ללא קבוצה"
+    ],
+    [
+      "No topic groups matched the current parameters. Try lowering the Similarity Threshold slider or clearing filters.",
+      "לא נמצאו קבוצות נושאים המתאימות להגדרות הנוכחיות. נסו להוריד את סף הדמיון או לנקות את המסננים."
+    ],
+    [
+      "No unclustered chats match your search query.",
+      "אין שיחות ללא קבוצה התואמות לחיפוש."
+    ],
+    [
+      "No pairs reached the selected threshold. Try lowering the Similarity Threshold slider above.",
+      "לא נמצאו זוגות שהגיעו לסף שנבחר. נסו להוריד את סף הדמיון למעלה."
+    ],
+    [
+      "Related conversation branches",
+      "הסתעפויות שיחה קשורות"
+    ],
+    [
+      "These are high-confidence sibling candidates based on shared ordered transcript prefixes, not merely similar topics.",
+      "אלו מועמדים בעלי ביטחון גבוה לשיחות אחיות, המבוססים על תחיליות תמלול משותפות ובאותו סדר — ולא רק על נושאים דומים."
+    ],
+    [
+      "No high-confidence branch families found. This is normal when chats do not share long transcript prefixes.",
+      "לא נמצאו משפחות הסתעפות בביטחון גבוה. זה תקין כאשר השיחות אינן חולקות תחיליות תמלול ארוכות."
+    ],
+    [
+      "Matched branch pairs (CSV available)",
+      "זוגות הסתעפות תואמים (קובץ CSV זמין)"
+    ],
+    [
+      "Shared turns",
+      "תורות משותפים"
+    ],
+    [
+      "Shared prefix",
+      "תחילית משותפת"
+    ],
+    [
+      "topic pairs",
+      "זוגות נושאים"
+    ],
+    [
+      "branch matches",
+      "התאמות הסתעפות"
+    ]
+  ]
+}

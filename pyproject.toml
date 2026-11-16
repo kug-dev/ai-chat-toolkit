@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-chat-topic-finder"
+version = "2.3.0"
+description = "Offline-first topic and branch analysis for exported AI conversations"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+authors = []
+keywords = ["ai-chat", "chat-archive", "conversation-analysis", "backup", "topic-clustering"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Utilities",
+  "Topic :: Text Processing :: General",
+]
+dependencies = []
+
+[project.scripts]
+chat-topic-finder = "chat_topic_finder.app:main"
+
+[tool.setuptools.packages.find]
+include = ["chat_topic_finder*"]
+
+[tool.setuptools.package-data]
+chat_topic_finder = ["locales/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
