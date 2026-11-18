@@ -9,8 +9,9 @@ def log_msg(cb: Callable[[str], None] | None, message: str) -> None:
 def clean_text(value: str) -> str:
     value = value.replace("\x00", " ").replace("\r\n", "\n").replace("\r", "\n")
     value = unicodedata.normalize("NFKC", value)
-    value = MEDIA_URL_RE.sub(" ", value)
+    # Strip Markdown images before URLs; otherwise the URL regex leaves image alt text behind.
     value = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", value)
+    value = MEDIA_URL_RE.sub(" ", value)
     value = re.sub(r"<[^>]+>", " ", value)
     value = re.sub(r"\s+", " ", value)
     return value.strip()

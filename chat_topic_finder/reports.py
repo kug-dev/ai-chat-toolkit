@@ -82,7 +82,7 @@ def write_csv(path: Path, rows: list[dict], headers: list[str]) -> None:
             writer.writerow(row)
 
 def _matching_excerpt(text: str, terms: list[str], limit: int = 440) -> str:
-    """Select a compact passage containing as many shared clues as possible."""
+    """Select a compact passage that maximizes distinct shared clues in one window."""
     text = (text or "").strip()
     if not text or not terms:
         return ""
@@ -95,45 +95,34 @@ def _matching_excerpt(text: str, terms: list[str], limit: int = 440) -> str:
             continue
         seen.add(key)
         needles.append(term)
-    windows: list[dict] = []
+
+    matches: list[tuple[int, int, str]] = []
     for term in needles:
         pattern = re.compile(r"(?<!\w)" + re.escape(term) + r"(?!\w)", re.I)
-        for match in pattern.finditer(text):
-            windows.append({
-                "start": max(0, match.start() - 150),
-                "end": min(len(text), match.end() + 190),
-                "terms": {term.casefold()},
-                "hits": 1,
-            })
-    if not windows:
+        matches.extend((match.start(), match.end(), term.casefold()) for match in pattern.finditer(text))
+    if not matches:
         return ""
-    windows.sort(key=lambda item: item["start"])
-    merged: list[dict] = []
-    for item in windows:
-        if merged and item["start"] <= merged[-1]["end"] + 70:
-            merged[-1]["end"] = max(merged[-1]["end"], item["end"])
-            merged[-1]["terms"].update(item["terms"])
-            merged[-1]["hits"] += item["hits"]
-        else:
-            merged.append({
-                "start": item["start"], "end": item["end"],
-                "terms": set(item["terms"]), "hits": item["hits"],
-            })
-    best = max(merged, key=lambda item: (len(item["terms"]), item["hits"], -item["start"]))
-    start, end = best["start"], best["end"]
-    if end - start > limit:
-        center = (start + end) // 2
-        start = max(0, center - limit // 2)
-        end = min(len(text), start + limit)
-        start = max(0, end - limit)
-    excerpt = text[start:end].strip()
-    if start:
+
+    width = max(120, limit)
+    # Candidate windows start just before each occurrence. Score each window by
+    # distinct clues first, then total occurrences, then proximity to the start.
+    candidate_starts = {max(0, min(len(text) - width, start - width // 3)) for start, _, _ in matches}
+    best_start = 0
+    best_score = (-1, -1, 0)
+    for start in candidate_starts:
+        end = min(len(text), start + width)
+        contained = [m for m in matches if m[0] < end and m[1] > start]
+        score = (len({m[2] for m in contained}), len(contained), -start)
+        if score > best_score:
+            best_score = score
+            best_start = start
+    end = min(len(text), best_start + width)
+    excerpt = text[best_start:end].strip()
+    if best_start:
         excerpt = "…" + excerpt
     if end < len(text):
         excerpt += "…"
     return excerpt
-
-
 def _matching_sections(chat: Chat, terms: list[str]) -> dict[str, str]:
     return {
         "user": _matching_excerpt(chat.user_text, terms),
@@ -1256,6 +1245,7 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
   }}
 
   [slTh, slKnn, slMaxG, inMinG, fltSite, fltLang, fltFrom, fltTo, inSearch].forEach(el => el.addEventListener('input', renderInteractive));
+  fltMedia.addEventListener('change', renderInteractive);
   timelineBars.addEventListener('click', e => {{
     const cell = e.target.closest('.hm-cell[data-month]');
     if (!cell) return;
@@ -1269,6 +1259,7 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
     inMinG.value = INIT.minGroupSize;
     fltSite.value = '';
     fltLang.value = '';
+    fltMedia.value = '';
     fltFrom.value = '';
     fltTo.value = '';
     selectedMonth = '';
