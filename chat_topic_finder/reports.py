@@ -106,7 +106,7 @@ def _matching_excerpt(text: str, terms: list[str], limit: int = 440) -> str:
     width = max(120, limit)
     # Candidate windows start just before each occurrence. Score each window by
     # distinct clues first, then total occurrences, then proximity to the start.
-    candidate_starts = {max(0, min(len(text) - width, start - width // 3)) for start, _, _ in matches}
+    candidate_starts = {max(0, start - 24) for start, _, _ in matches}
     best_start = 0
     best_score = (-1, -1, 0)
     for start in candidate_starts:
