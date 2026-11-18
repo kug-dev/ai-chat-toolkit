@@ -27,7 +27,8 @@
     "Provider:": "ספק:",
     "Remote providers receive conversation text. Use only a provider you trust.": "ספקים מרוחקים מקבלים את טקסט השיחות. השתמשו רק בספק שאתם סומכים עליו.",
     "Enable automatic branch matching": "הפעלת זיהוי אוטומטי של הסתעפויות שיחה",
-    "Analysis runs locally by default. Optional configured AI providers receive conversation text.": "הניתוח מתבצע מקומית כברירת מחדל. ספקי AI שהוגדרו במפורש מקבלים את טקסט השיחות."
+    "Analysis runs locally by default. Optional configured AI providers receive conversation text.": "הניתוח מתבצע מקומית כברירת מחדל. ספקי AI שהוגדרו במפורש מקבלים את טקסט השיחות.",
+    "Exclude chats containing only generated media": "החרגת שיחות שמכילות מדיה שנוצרה בלבד"
   },
   "userscript": {
     "What to save": "מה לשמור",
@@ -408,6 +409,38 @@
     [
       "branch matches",
       "התאמות הסתעפות"
+    ],
+    [
+      "Likely matching sections",
+      "מקטעים תואמים אפשריים"
+    ],
+    [
+      "These excerpts are selected from the full conversation text where the shared clues occur. They are evidence for review, not a guarantee that both chats discuss the same idea.",
+      "הקטעים נבחרו מתוך גוף השיחה המלא במקומות שבהם מופיעים הרמזים המשותפים. הם נועדו לעזור בבדיקה, אך אינם מבטיחים ששתי השיחות עוסקות באותו רעיון."
+    ],
+    [
+      "Matched user section",
+      "מקטע תואם בהודעות המשתמש"
+    ],
+    [
+      "Matched assistant section",
+      "מקטע תואם בתשובות העוזר"
+    ],
+    [
+      "Matched code section",
+      "מקטע תואם בקוד"
+    ],
+    [
+      "No direct text match found in this section. The shared clue may come from code, artifact metadata, or an AI topic summary.",
+      "לא נמצא כאן ביטוי טקסטואלי תואם. ייתכן שהרמז המשותף מגיע מקוד, ממטא-נתונים של תוצר או מסיכום נושאי של מודל AI."
+    ],
+    [
+      "Opening context (start of conversation)",
+      "הקשר ראשוני (תחילת השיחה)"
+    ],
+    [
+      "Generated media only",
+      "מדיה שנוצרה בלבד"
     ]
   ]
 }

@@ -140,6 +140,8 @@ class Chat:
     vector: dict[str, float] = field(default_factory=dict)
     group_id: str = ""
     turns: list[dict[str, str]] = field(default_factory=list)
+    generated_media_only: bool = False
+    generated_media_count: int = 0
 
 @dataclass
 class TopicGroup:

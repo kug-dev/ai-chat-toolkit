@@ -55,6 +55,49 @@ def inspect_manifest(
         health.notes = f"Manifest parse error: {e}"
     return result, site_name
 
+GENERATED_MEDIA_EXTS = {
+    ".png", ".jpg", ".jpeg", ".webp", ".gif", ".apng", ".svg", ".bmp",
+    ".tif", ".tiff", ".heic", ".heif", ".avif", ".ico",
+    ".mp4", ".webm", ".mov", ".mkv", ".avi", ".m4v",
+    ".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac", ".opus",
+}
+
+
+def _count_generated_media(infos: list[zipfile.ZipInfo], chat_directory: str) -> int:
+    """Count saved media files under this chat's generated/ or artifacts/ folders."""
+    prefix = chat_directory.rstrip("/") + "/" if chat_directory else ""
+    count = 0
+    for info in infos:
+        path = info.filename.replace("\\", "/")
+        if prefix:
+            if not path.startswith(prefix):
+                continue
+            relative = path[len(prefix):]
+        else:
+            relative = path
+        parts = relative.split("/")
+        if len(parts) < 2 or parts[0].casefold() not in {"generated", "artifacts"}:
+            continue
+        if Path(parts[-1]).suffix.casefold() in GENERATED_MEDIA_EXTS:
+            count += 1
+    return count
+
+
+def _has_meaningful_transcript_text(chat: Chat) -> bool:
+    """Ignore media embeds and stock completion phrases, but retain real prompts/replies."""
+    value = "\n".join((chat.user_text, chat.assistant_text, chat.text))
+    value = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", value)
+    value = re.sub(r"\[[^\]]*\]\([^)]*\)", " ", value)
+    boilerplate = (
+        r"\b(?:here(?:'s| is) (?:the|your) )?"
+        r"(?:(?:generated|created) )?(?:image|picture|video|audio)"
+        r"(?: (?:was|has been) (?:generated|created))?(?: successfully)?\b"
+    )
+    value = re.sub(boilerplate, " ", value, flags=re.I)
+    value = re.sub(r"[\W_]+", " ", value, flags=re.UNICODE)
+    return bool(re.search(r"\w{2,}", value, flags=re.UNICODE))
+
+
 def load_zip(
     path: Path,
     health_list: list[ArchiveHealth],
@@ -155,6 +198,9 @@ def load_zip(
                     artifact_text="\n".join(art_names + art_texts),
                     artifact_names=art_names,
                 )
+                media_count = _count_generated_media(infos, directory)
+                chat.generated_media_count = media_count
+                chat.generated_media_only = media_count > 0 and not _has_meaningful_transcript_text(chat)
                 if chat.title in ("Untitled", "raw", "raw.json") and title:
                     chat.title = title
                 chats.append(chat)

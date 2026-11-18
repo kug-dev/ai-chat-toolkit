@@ -28,6 +28,7 @@ def analyze(
     export_online_bundle: bool = False,
     import_reports_path: str | Path | None = None,
     branch_matching: bool = True,
+    exclude_generated_media_only: bool = False,
     log=None,
 ) -> dict:
     t0 = time.time()
@@ -54,6 +55,14 @@ def analyze(
             chats.append(c)
     if not chats:
         raise ValueError("No readable conversations found. Expected conversation-folder chat.md files or raw.json files inside the ZIPs.")
+    excluded_media_only_count = 0
+    if exclude_generated_media_only:
+        before_filter = len(chats)
+        chats = [chat for chat in chats if not chat.generated_media_only]
+        excluded_media_only_count = before_filter - len(chats)
+        log_msg(log, f"Excluded {excluded_media_only_count} generated-media-only chat(s).")
+        if not chats:
+            raise ValueError("The media-only filter excluded every conversation. Disable --exclude-generated-media-only to analyze them.")
     db_path = out_path / "index.sqlite"
     if import_reports_path:
         import_online_ai_reports(chats, Path(import_reports_path), log=log)
@@ -113,7 +122,7 @@ def analyze(
             branch_match_count = len(branch_payload.get("matches", []))
         except (OSError, json.JSONDecodeError, KeyError):
             pass
-    return {"chat_count": len(chats), "pair_count": len(edges), "group_count": len(groups), "branch_match_count": branch_match_count, "output": paths_out, "health": health}
+    return {"chat_count": len(chats), "excluded_media_only_count": excluded_media_only_count, "pair_count": len(edges), "group_count": len(groups), "branch_match_count": branch_match_count, "output": paths_out, "health": health}
 
 def gui() -> None:
     import tkinter as tk
@@ -132,6 +141,7 @@ def gui() -> None:
     llm_model_var = tk.StringVar(value="")
     llm_provider_var = tk.StringVar(value=DEFAULT_LLM_PROVIDER)
     branch_match_var = tk.BooleanVar(value=True)
+    media_only_var = tk.BooleanVar(value=False)
     llm_url_var = tk.StringVar(value=DEFAULT_LLM_URL)
     llm_key_var = tk.StringVar(value="")
     llm_chars_var = tk.StringVar(value=str(DEFAULT_LLM_MAX_CHARS))
@@ -220,6 +230,7 @@ def gui() -> None:
     ttk.Entry(opts, textvariable=max_group_var, width=4).pack(side="left", padx=(6, 14))
     ttk.Checkbutton(opts, text="Export deduplicated grouped_chats.zip", variable=export_zip_var).pack(side="left")
     ttk.Checkbutton(opts, text="Enable automatic branch matching", variable=branch_match_var).pack(side="left", padx=(8, 0))
+    ttk.Checkbutton(opts, text="Exclude chats containing only generated media", variable=media_only_var).pack(side="left", padx=(8, 0))
 
     llm_bar = ttk.Frame(top)
     llm_bar.grid(row=6, column=0, columnspan=3, sticky="ew", pady=(0, 6))
@@ -307,6 +318,7 @@ def gui() -> None:
         lpass2 = bool(llm_pass2_var.get())
         exp_bundle = bool(export_bundle_var.get())
         imp_reports = import_reports_var.get().strip() or None
+        exclude_media_only = bool(media_only_var.get())
         button.configure(state="disabled")
         status.configure(text="Analyzing…")
         text.delete("1.0", "end")
@@ -326,6 +338,7 @@ def gui() -> None:
                     llm_provider=lprovider,
                     llm_api_key=lkey,
                     branch_matching=bool(branch_match_var.get()),
+                    exclude_generated_media_only=exclude_media_only,
                     llm_max_chars=lchars,
                     llm_mode=lmode,
                     llm_pass2=lpass2,
@@ -386,6 +399,7 @@ def main(argv=None) -> int:
     parser.add_argument("--llm-mode", choices=["hybrid", "report-only"], default="hybrid", help="How to connect chats when --llm-model is used: 'hybrid' (report + lexical) or 'report-only'")
     parser.add_argument("--llm-api-key", default="", help="Optional provider API key; environment variables LLM_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY / ANTHROPIC_API_KEY are also checked")
     parser.add_argument("--no-branch-matching", action="store_true", help="Disable conservative shared-prefix detection of sibling conversation branches")
+    parser.add_argument("--exclude-generated-media-only", action="store_true", help="Exclude chats with saved generated media but no meaningful transcript text")
     parser.add_argument("--llm-pass2", action="store_true", help="Run a 2nd LLM pass grading how each chat segment connects to external topics (excluding topics sourced only from the same chat)")
     parser.add_argument("--export-grouped-zip", action="store_true", help="Export a deduplicated grouped_chats.zip organized by topic folder")
     parser.add_argument("--export-online-bundle", action="store_true", help="Export compact online_ai_bundle.md file(s) ready to upload to Gemini, NotebookLM, Claude, or ChatGPT")
@@ -430,6 +444,7 @@ def main(argv=None) -> int:
             llm_provider=args.llm_provider,
             llm_api_key=args.llm_api_key,
             branch_matching=not args.no_branch_matching,
+            exclude_generated_media_only=args.exclude_generated_media_only,
             llm_max_chars=args.llm_max_chars,
             llm_mode=args.llm_mode,
             llm_pass2=args.llm_pass2,

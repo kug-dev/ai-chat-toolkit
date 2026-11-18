@@ -1,6 +1,6 @@
 # AI Chat Toolkit
 
-> **Repository description:** Local-first backup, topic discovery, and branch matching for ChatGPT, Claude, Gemini, and other AI chats.
+**עברית:** [קראו את המדריך בעברית](README.he.md)
 
 AI Chat Toolkit is a local-first toolkit for keeping, exploring, and connecting conversations exported from AI assistants.
 
@@ -35,6 +35,8 @@ The userscript is assembled from maintainable source modules but distributed as 
 - Reads backup ZIPs, `chat.md`, `raw.json`, Markdown, and text files.
 - Uses an explainable lexical/TF-IDF matching pipeline, with optional LLM-generated topic reports.
 - Identifies similar conversations and clusters them into topic groups.
+- Shows side-by-side excerpts selected from the actual matching sections, not only the opening messages.
+- Can exclude conversations containing generated media but no meaningful transcript text.
 - Detects likely **conversation branches** using a shared, ordered transcript prefix followed by divergent continuations. It does not treat same-topic conversations as branches merely because their subjects overlap.
 - Provides a full-text SQLite FTS5 index when the Python SQLite build supports it (with a fallback search path).
 - Exports an interactive HTML report, CSV files, JSON data, a SQLite index, and a repair list for missing backup items.
@@ -70,6 +72,9 @@ To run a non-interactive analysis:
 
 ```bash
 python -m chat_topic_finder --input /path/to/backup.zip --output /path/to/report
+
+# Exclude chats whose only content is generated media (no meaningful transcript text)
+python -m chat_topic_finder --input /path/to/backup.zip --output /path/to/report --exclude-generated-media-only
 ```
 
 Use `python -m chat_topic_finder --help` for all options.

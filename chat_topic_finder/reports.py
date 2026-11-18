@@ -81,6 +81,67 @@ def write_csv(path: Path, rows: list[dict], headers: list[str]) -> None:
         for row in rows:
             writer.writerow(row)
 
+def _matching_excerpt(text: str, terms: list[str], limit: int = 440) -> str:
+    """Select a compact passage containing as many shared clues as possible."""
+    text = (text or "").strip()
+    if not text or not terms:
+        return ""
+    needles: list[str] = []
+    seen: set[str] = set()
+    for raw_term in terms:
+        term = re.sub(r"^(?:artifact|code|report):", "", str(raw_term), flags=re.I).strip()
+        key = term.casefold()
+        if len(term) < 3 or key in seen:
+            continue
+        seen.add(key)
+        needles.append(term)
+    windows: list[dict] = []
+    for term in needles:
+        pattern = re.compile(r"(?<!\w)" + re.escape(term) + r"(?!\w)", re.I)
+        for match in pattern.finditer(text):
+            windows.append({
+                "start": max(0, match.start() - 150),
+                "end": min(len(text), match.end() + 190),
+                "terms": {term.casefold()},
+                "hits": 1,
+            })
+    if not windows:
+        return ""
+    windows.sort(key=lambda item: item["start"])
+    merged: list[dict] = []
+    for item in windows:
+        if merged and item["start"] <= merged[-1]["end"] + 70:
+            merged[-1]["end"] = max(merged[-1]["end"], item["end"])
+            merged[-1]["terms"].update(item["terms"])
+            merged[-1]["hits"] += item["hits"]
+        else:
+            merged.append({
+                "start": item["start"], "end": item["end"],
+                "terms": set(item["terms"]), "hits": item["hits"],
+            })
+    best = max(merged, key=lambda item: (len(item["terms"]), item["hits"], -item["start"]))
+    start, end = best["start"], best["end"]
+    if end - start > limit:
+        center = (start + end) // 2
+        start = max(0, center - limit // 2)
+        end = min(len(text), start + limit)
+        start = max(0, end - limit)
+    excerpt = text[start:end].strip()
+    if start:
+        excerpt = "…" + excerpt
+    if end < len(text):
+        excerpt += "…"
+    return excerpt
+
+
+def _matching_sections(chat: Chat, terms: list[str]) -> dict[str, str]:
+    return {
+        "user": _matching_excerpt(chat.user_text, terms),
+        "assistant": _matching_excerpt(chat.assistant_text, terms),
+        "code": _matching_excerpt(chat.code_text, terms, limit=360),
+    }
+
+
 def generate_reports(
     outdir: Path,
     chats: list[Chat],
@@ -139,6 +200,8 @@ def generate_reports(
             "llm_summary": (c.llm_report or {}).get("summary", ""),
             "code_languages": ", ".join(c.code_langs),
             "artifacts": ", ".join(c.artifact_names),
+            "generated_media_only": c.generated_media_only,
+            "generated_media_count": c.generated_media_count,
             "source": c.source,
             "archive": c.archive,
             "member": c.member,
@@ -165,7 +228,7 @@ def generate_reports(
     write_csv(
         outdir / "chat_index.csv",
         chat_rows,
-        ["chat_id", "topic_group", "title", "date", "site", "project_tag", "llm_primary_topic", "llm_intent", "llm_summary", "code_languages", "artifacts", "source", "archive", "member", "characters", "token_count", "truncated", "exact_content_hash"],
+        ["chat_id", "topic_group", "title", "date", "site", "project_tag", "llm_primary_topic", "llm_intent", "llm_summary", "code_languages", "artifacts", "generated_media_only", "generated_media_count", "source", "archive", "member", "characters", "token_count", "truncated", "exact_content_hash"],
     )
     write_csv(outdir / "similar_pairs.csv", pair_rows, ["similarity", "topic_group", "chat_a", "source_a", "chat_b", "source_b", "shared_terms"])
     health_rows = []
@@ -286,6 +349,8 @@ def generate_reports(
             "tag": c.project_tag,
             "langs": c.code_langs[:5],
             "artifacts": c.artifact_names[:6],
+            "generated_media_only": c.generated_media_only,
+            "generated_media_count": c.generated_media_count,
             "llm": c.llm_report if (c.llm_report and any(c.llm_report.values())) else None,
             "chars": len(c.text),
             "tokens": len(c.tokens),
@@ -300,6 +365,8 @@ def generate_reports(
             "b": e["b"],
             "score": round(e["score"], 4),
             "terms": e["shared_terms"][:6],
+            "match_a": _matching_sections(chats[e["a"]], e["shared_terms"]),
+            "match_b": _matching_sections(chats[e["b"]], e["shared_terms"]),
         }
         for e in all_interactive_edges
     ]
@@ -859,6 +926,7 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
       c.site && c.site !== 'unknown' ? `<span class="badge-site">${{escHtml(c.site.toUpperCase())}}</span>` : '',
       c.date ? `<span class="badge-site">📅 ${{escHtml(c.date)}}</span>` : '',
       c.tag ? `<span class="badge-site">📁 ${{escHtml(c.tag)}}</span>` : '',
+      c.generated_media_only ? `<span class="badge-sub">Generated media only · ${{c.generated_media_count || 0}}</span>` : '',
       c.llm?.primary_topic ? `<span class="badge-sub">🧠 Topic: ${{escHtml(c.llm.primary_topic)}}</span>` : '',
       c.llm?.intent ? `<span class="badge-hub">🎯 Intent: ${{escHtml(c.llm.intent)}}</span>` : '',
       ...(c.langs || []).map(l => `<span class="badge-lang">${{escHtml(l)}}</span>`),
@@ -914,28 +982,48 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
                  ALL_EDGES.find(e => (e.a === aId && e.b === bId) || (e.a === bId && e.b === aId));
     const terms = edge ? edge.terms : [];
     const scoreStr = edge ? edge.score.toFixed(3) : 'N/A';
+    const matchA = edge?.match_a || {{}};
+    const matchB = edge?.match_b || {{}};
     modalTitle.textContent = `Side-by-Side Comparison (Similarity: ${{scoreStr}})`;
     const pills = terms.map(t => `<span class="tag">${{escHtml(t)}}</span>`).join(' ') || '<span class="muted">Exact hash or char-gram match</span>';
+    const matchBlock = (label, value) => `
+      <div class="turn-label">${{label}}</div>
+      <div class="turn-box">${{value ? highlightTerms(value, terms) : '<span class="muted">No direct text match found in this section. The shared clue may come from code, artifact metadata, or an AI topic summary.</span>'}}</div>`;
+    const matchingColumn = (chat, matches) => `
+      <div class="diff-col">
+        <h4 style="margin:0 0 .25rem">${{escHtml(chat.title)}}</h4>
+        <div class="muted" style="font-size:.8rem;margin-bottom:.5rem"><code>${{escHtml(chat.source)}}</code></div>
+        ${{matchBlock('Matched user section', matches.user)}}
+        ${{matchBlock('Matched assistant section', matches.assistant)}}
+        ${{matches.code ? matchBlock('Matched code section', matches.code) : ''}}
+      </div>`;
     modalBody.innerHTML = `
       <p style="margin-top:0"><b>Highlighted shared clues:</b> ${{pills}}</p>
+      <h4 style="margin:.4rem 0">Likely matching sections</h4>
+      <p class="muted" style="margin:.2rem 0 .7rem">These excerpts are selected from the full conversation text where the shared clues occur. They are evidence for review, not a guarantee that both chats discuss the same idea.</p>
       <div class="diff-grid">
-        <div class="diff-col">
-          <h4 style="margin:0 0 .25rem">${{escHtml(ca.title)}}</h4>
-          <div class="muted" style="font-size:.8rem;margin-bottom:.5rem"><code>${{escHtml(ca.source)}}</code></div>
-          <div class="turn-label">User Prompts</div>
-          <div class="turn-box">${{highlightTerms(ca.user_preview, terms)}}</div>
-          <div class="turn-label" style="margin-top:.65rem">Assistant Replies</div>
-          <div class="turn-box">${{highlightTerms(ca.asst_preview || '(None)', terms)}}</div>
-        </div>
-        <div class="diff-col">
-          <h4 style="margin:0 0 .25rem">${{escHtml(cb.title)}}</h4>
-          <div class="muted" style="font-size:.8rem;margin-bottom:.5rem"><code>${{escHtml(cb.source)}}</code></div>
-          <div class="turn-label">User Prompts</div>
-          <div class="turn-box">${{highlightTerms(cb.user_preview, terms)}}</div>
-          <div class="turn-label" style="margin-top:.65rem">Assistant Replies</div>
-          <div class="turn-box">${{highlightTerms(cb.asst_preview || '(None)', terms)}}</div>
-        </div>
+        ${{matchingColumn(ca, matchA)}}
+        ${{matchingColumn(cb, matchB)}}
       </div>
+      <details style="margin-top:1rem">
+        <summary>Opening context (start of conversation)</summary>
+        <div class="diff-grid" style="margin-top:.6rem">
+          <div class="diff-col">
+            <h4 style="margin:0 0 .25rem">${{escHtml(ca.title)}}</h4>
+            <div class="turn-label">User Prompts</div>
+            <div class="turn-box">${{highlightTerms(ca.user_preview, terms)}}</div>
+            <div class="turn-label" style="margin-top:.65rem">Assistant Replies</div>
+            <div class="turn-box">${{highlightTerms(ca.asst_preview || '(None)', terms)}}</div>
+          </div>
+          <div class="diff-col">
+            <h4 style="margin:0 0 .25rem">${{escHtml(cb.title)}}</h4>
+            <div class="turn-label">User Prompts</div>
+            <div class="turn-box">${{highlightTerms(cb.user_preview, terms)}}</div>
+            <div class="turn-label" style="margin-top:.65rem">Assistant Replies</div>
+            <div class="turn-box">${{highlightTerms(cb.asst_preview || '(None)', terms)}}</div>
+          </div>
+        </div>
+      </details>
     `;
     modal.classList.add('open');
   }}
