@@ -85,7 +85,7 @@ def _count_generated_media(infos: list[zipfile.ZipInfo], chat_directory: str) ->
 
 def _has_meaningful_transcript_text(chat: Chat) -> bool:
     """Ignore media embeds and stock completion phrases, but retain real prompts/replies."""
-    value = "\n".join((chat.user_text, chat.assistant_text, chat.text))
+    value = "\n".join((chat.user_text, chat.assistant_text))
     value = re.sub(r"!\[[^\]]*\]\([^)]*\)", " ", value)
     value = re.sub(r"\[[^\]]*\]\([^)]*\)", " ", value)
     boilerplate = (
@@ -237,6 +237,22 @@ def discover_inputs(paths: Iterable[str | Path]) -> tuple[list[Path], list[Path]
                     loose.add(full.resolve())
     return sorted(zips), sorted(loose)
 
+def _count_generated_media_directory(chat_directory: Path) -> int:
+    """Count generated media files beside an extracted chat.md/raw.json file."""
+    count = 0
+    for folder_name in ("generated", "artifacts"):
+        folder = chat_directory / folder_name
+        if not folder.is_dir():
+            continue
+        try:
+            for candidate in folder.rglob("*"):
+                if candidate.is_file() and candidate.suffix.casefold() in GENERATED_MEDIA_EXTS:
+                    count += 1
+        except OSError:
+            continue
+    return count
+
+
 def load_loose(path: Path, log: Callable[[str], None] | None = None) -> Chat | None:
     try:
         raw = path.read_text(encoding="utf-8", errors="replace")
@@ -249,5 +265,8 @@ def load_loose(path: Path, log: Callable[[str], None] | None = None) -> Chat | N
     if kind == "json":
         title, _, _, json_date = parse_raw_json(raw, title)
     chat = chat_from_text(title, raw, source=str(path), member=str(path), chat_date=json_date)
+    media_count = _count_generated_media_directory(path.parent)
+    chat.generated_media_count = media_count
+    chat.generated_media_only = media_count > 0 and not _has_meaningful_transcript_text(chat)
     log_msg(log, f"Read loose file: {path.name}")
     return chat

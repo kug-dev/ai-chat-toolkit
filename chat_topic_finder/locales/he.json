@@ -441,6 +441,22 @@
     [
       "Generated media only",
       "מדיה שנוצרה בלבד"
+    ],
+    [
+      "Generated media filter",
+      "סינון מדיה שנוצרה"
+    ],
+    [
+      "Generated media: Include all",
+      "מדיה שנוצרה: כל השיחות"
+    ],
+    [
+      "Exclude media-only chats",
+      "החרגת שיחות שמכילות מדיה בלבד"
+    ],
+    [
+      "Only media-only chats",
+      "הצגת שיחות שמכילות מדיה בלבד"
     ]
   ]
 }

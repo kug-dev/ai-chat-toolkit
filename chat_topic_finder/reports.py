@@ -501,6 +501,11 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
           <option value="__cross__">★ Cross-Platform Groups Only</option>
         </select>
         <select id="flt-lang" style="flex:1"><option value="">All Code/Artifacts</option></select>
+        <select id="flt-media" style="flex:1" aria-label="Generated media filter">
+          <option value="">Generated media: Include all</option>
+          <option value="exclude">Exclude media-only chats</option>
+          <option value="only">Only media-only chats</option>
+        </select>
       </div>
     </div>
     <div class="ctrl">
@@ -600,6 +605,7 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
   const DATA = JSON.parse(document.getElementById('report-data').textContent);
   let reportLanguage = 'en';
   const reportPhrases = {report_phrases_json};
+  const translateReport = value => reportLanguage === 'he' ? (reportPhrases.find(([en]) => en === value)?.[1] || value) : value;
   const applyReportLanguage = () => {{
     const he = reportLanguage === 'he';
     document.documentElement.lang = he ? 'he' : 'en';
@@ -633,6 +639,7 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
   const inMinG = document.getElementById('in-ming');
   const fltSite = document.getElementById('flt-site');
   const fltLang = document.getElementById('flt-lang');
+  const fltMedia = document.getElementById('flt-media');
   const fltFrom = document.getElementById('flt-from');
   const fltTo = document.getElementById('flt-to');
   const inSearch = document.getElementById('search');
@@ -926,7 +933,7 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
       c.site && c.site !== 'unknown' ? `<span class="badge-site">${{escHtml(c.site.toUpperCase())}}</span>` : '',
       c.date ? `<span class="badge-site">📅 ${{escHtml(c.date)}}</span>` : '',
       c.tag ? `<span class="badge-site">📁 ${{escHtml(c.tag)}}</span>` : '',
-      c.generated_media_only ? `<span class="badge-sub">Generated media only · ${{c.generated_media_count || 0}}</span>` : '',
+      c.generated_media_only ? `<span class="badge-sub">${{escHtml(translateReport('Generated media only'))}} · ${{c.generated_media_count || 0}}</span>` : '',
       c.llm?.primary_topic ? `<span class="badge-sub">🧠 Topic: ${{escHtml(c.llm.primary_topic)}}</span>` : '',
       c.llm?.intent ? `<span class="badge-hub">🎯 Intent: ${{escHtml(c.llm.intent)}}</span>` : '',
       ...(c.langs || []).map(l => `<span class="badge-lang">${{escHtml(l)}}</span>`),
@@ -993,20 +1000,20 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
       <div class="diff-col">
         <h4 style="margin:0 0 .25rem">${{escHtml(chat.title)}}</h4>
         <div class="muted" style="font-size:.8rem;margin-bottom:.5rem"><code>${{escHtml(chat.source)}}</code></div>
-        ${{matchBlock('Matched user section', matches.user)}}
-        ${{matchBlock('Matched assistant section', matches.assistant)}}
-        ${{matches.code ? matchBlock('Matched code section', matches.code) : ''}}
+        ${{matchBlock(translateReport('Matched user section'), matches.user)}}
+        ${{matchBlock(translateReport('Matched assistant section'), matches.assistant)}}
+        ${{matches.code ? matchBlock(translateReport('Matched code section'), matches.code) : ''}}
       </div>`;
     modalBody.innerHTML = `
       <p style="margin-top:0"><b>Highlighted shared clues:</b> ${{pills}}</p>
-      <h4 style="margin:.4rem 0">Likely matching sections</h4>
-      <p class="muted" style="margin:.2rem 0 .7rem">These excerpts are selected from the full conversation text where the shared clues occur. They are evidence for review, not a guarantee that both chats discuss the same idea.</p>
+      <h4 style="margin:.4rem 0">${{escHtml(translateReport('Likely matching sections'))}}</h4>
+      <p class="muted" style="margin:.2rem 0 .7rem">${{escHtml(translateReport('These excerpts are selected from the full conversation text where the shared clues occur. They are evidence for review, not a guarantee that both chats discuss the same idea.'))}}</p>
       <div class="diff-grid">
         ${{matchingColumn(ca, matchA)}}
         ${{matchingColumn(cb, matchB)}}
       </div>
       <details style="margin-top:1rem">
-        <summary>Opening context (start of conversation)</summary>
+        <summary>${{escHtml(translateReport('Opening context (start of conversation)'))}}</summary>
         <div class="diff-grid" style="margin-top:.6rem">
           <div class="diff-col">
             <h4 style="margin:0 0 .25rem">${{escHtml(ca.title)}}</h4>
@@ -1042,6 +1049,8 @@ body[dir="rtl"] .warn{{border-left:0;border-right:4px solid #d99824;border-radiu
     const langVal = fltLang.value;
     if (langVal === 'has:artifact' && !(c.artifacts && c.artifacts.length)) return false;
     if (langVal && langVal !== 'has:artifact' && !(c.langs && c.langs.includes(langVal))) return false;
+    if (fltMedia.value === 'exclude' && c.generated_media_only) return false;
+    if (fltMedia.value === 'only' && !c.generated_media_only) return false;
     if (selectedMonth && c.month !== selectedMonth) return false;
     if (fltFrom.value && (!c.date || c.date < fltFrom.value)) return false;
     if (fltTo.value && (!c.date || c.date > fltTo.value)) return false;

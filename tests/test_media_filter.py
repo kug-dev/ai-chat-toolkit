@@ -59,6 +59,18 @@ class MediaOnlyFilterTests(unittest.TestCase):
             self.assertFalse(by_title["Prompted image conversation"].generated_media_only)
             self.assertEqual(by_title["Prompted image conversation"].generated_media_count, 1)
 
+    def test_extracted_folder_media_only_chat_is_classified(self):
+        from chat_topic_finder.ingest import load_loose
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "chat.md").write_text(MEDIA_ONLY_TRANSCRIPT, encoding="utf-8")
+            (root / "generated").mkdir()
+            (root / "generated" / "generated.png").write_bytes(b"not-a-real-image")
+            chat = load_loose(root / "chat.md", log=lambda _message: None)
+            self.assertIsNotNone(chat)
+            self.assertTrue(chat.generated_media_only)
+            self.assertEqual(chat.generated_media_count, 1)
+
     def test_filter_excludes_only_media_only_chats_from_analysis(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
